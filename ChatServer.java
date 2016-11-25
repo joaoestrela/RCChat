@@ -251,7 +251,7 @@ public class ChatServer
 				if(client.getRoom().equals("") && client.getStatus().equals("outside")){
 					Room temp_room = verify_room(messageFromClient[1]);
 					if(temp_room == null){
-						temp_room = new Room(messageFromClient[1]); 
+						temp_room = new Room(messageFromClient[1]);
 						create_room(temp_room);
 					}
 					temp_room.add_client(client);
@@ -311,7 +311,6 @@ public class ChatServer
 		if(client.getRoom().equals("")) return;
 		Room toCast = verify_room(client.getRoom());
 		for(int i = 0; i < toCast.getClients().size(); i++){
-			//nao devemos enviar nada ao proprio a nao se que seja a mensagem, já recebe OK e ERROR
 			if((message.startsWith("MESSAGE") && toCast.getClients().get(i) == client) || (toCast.getClients().get(i) != client))
 				toCast.getClients().get(i).getSc().write(encoder.encode(CharBuffer.wrap(message+"\n")));
 		}
