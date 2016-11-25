@@ -143,7 +143,7 @@ public class ChatClient {
 		// PREENCHER AQUI
 		while(!clientSocket.isClosed()){
 			String temp_line = inFromServer.readLine();
-			System.out.print(temp_line);
+			System.out.println("Received " + temp_line);
 			if(!temp_line.equals("")){
 				String messageFromServer [] = temp_line.split(" ");
 				String user_message = "";
