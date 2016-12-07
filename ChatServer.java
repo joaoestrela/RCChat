@@ -248,11 +248,15 @@ public class ChatServer
 				}
 			break;
 			case("/join"):
-				if(client.getRoom().equals("") && client.getStatus().equals("outside")){
+				if(!client.getStatus().equals("init")){
 					Room temp_room = verify_room(messageFromClient[1]);
 					if(temp_room == null){
 						temp_room = new Room(messageFromClient[1]);
 						create_room(temp_room);
+					}
+					if(!client.getRoom().equals("")){
+							broadcast(client, "LEFT " + client.getNick());
+							verify_room(client.getRoom()).remove_client(client);
 					}
 					temp_room.add_client(client);
 					client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
@@ -286,6 +290,8 @@ public class ChatServer
 			}
 			client.getSc().write(encoder.encode(CharBuffer.wrap("BYE\n")));
 			clients.remove(client);
+			System.out.println("Closed connection from: " + client.getSc().socket());			
+			client.getSc().close();
 			break;
 			case("/priv"):
 			Client receiver = get_client(messageFromClient[1]);
@@ -302,7 +308,10 @@ public class ChatServer
 			}
 			break;
 			default:
-				broadcast(client, "MESSAGE " + client.getNick()+" " + i);
+				if(client.getRoom() == ""){
+						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+				}
+				else broadcast(client, "MESSAGE " + client.getNick()+" " + i);
 				break;
 			}
 		}
