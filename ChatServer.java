@@ -224,7 +224,7 @@ public class ChatServer
 		// Decode and print the message to stdout
 		message += decoder.decode(buffer).toString();
 		if(message.contains("\n")){
-			System.out.print("User-"+temp_client.getNick()+" sent: " + message );
+			System.out.println("User-"+temp_client.getNick()+" sent:" + message );
 			process_msg(temp_client,message);
 			message = "";
 		}
@@ -303,6 +303,7 @@ public class ChatServer
 			break;
 			default:
 				broadcast(client, "MESSAGE " + client.getNick()+" " + i);
+				break;
 			}
 		}
 	}
@@ -318,7 +319,7 @@ public class ChatServer
 
 	static public void create_room(Room room){
 		rooms.add(room);
-		System.out.println("Created room: " + room.getName());
+		System.out.println("Created room:" + room.getName());
 	}
 
 	static public void remove_room(Room room){
