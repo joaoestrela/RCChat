@@ -224,7 +224,7 @@ public class ChatServer
 		// Decode and print the message to stdout
 		message += decoder.decode(buffer).toString();
 		if(message.contains("\n")){
-			System.out.println("User-"+temp_client.getNick()+" sent:" + message );
+			System.out.print("User-"+temp_client.getNick()+" sent:" + message );
 			process_msg(temp_client,message);
 			message = "";
 		}
@@ -235,84 +235,92 @@ public class ChatServer
 		String messagesFromClient [] = msg.split("\n");
 		for(String i:messagesFromClient){
 			String messageFromClient [] = i.split(" ");
-			switch(messageFromClient[0]){
-			case("/nick"):
-				if(get_client(messageFromClient[1]) == null){
-					String old_nick = client.getNick();
-					client.setNick(messageFromClient[1]);
-					client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
-					broadcast(client, "NEWNICK " + old_nick + " " + client.getNick());
-				}
-				else{
-					client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
-				}
-			break;
-			case("/join"):
-				if(!client.getStatus().equals("init")){
-					Room temp_room = verify_room(messageFromClient[1]);
-					if(temp_room == null){
-						temp_room = new Room(messageFromClient[1]);
-						create_room(temp_room);
-					}
-					if(!client.getRoom().equals("")){
-							broadcast(client, "LEFT " + client.getNick());
-							verify_room(client.getRoom()).remove_client(client);
-					}
-					temp_room.add_client(client);
-					client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
-					broadcast(client, "JOINED " + client.getNick());
-				}
-				else{
-					client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
-				}
-			break;
-			case("/leave"):
-				if(!client.getRoom().equals("")){
-					Room temp_room = verify_room(client.getRoom());
-					if(temp_room == null){
-						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+			boolean command = (messageFromClient[0].charAt(0) == '/' && messageFromClient[0].charAt(1) != '/');
+			if(command){
+				switch(messageFromClient[0]){
+				case("/nick"):
+					if(get_client(messageFromClient[1]) == null){
+						String old_nick = client.getNick();
+						client.setNick(messageFromClient[1]);
+						client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
+						broadcast(client, "NEWNICK " + old_nick + " " + client.getNick());
 					}
 					else{
-						client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
-						broadcast(client, "LEFT " + client.getNick());
-						temp_room.remove_client(client);
+						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
 					}
+				break;
+				case("/join"):
+					if(!client.getStatus().equals("init")){
+						Room temp_room = verify_room(messageFromClient[1]);
+						if(temp_room == null){
+							temp_room = new Room(messageFromClient[1]);
+							create_room(temp_room);
+						}
+						if(!client.getRoom().equals("")){
+							broadcast(client, "LEFT " + client.getNick());
+							verify_room(client.getRoom()).remove_client(client);
+						}
+						temp_room.add_client(client);
+						client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
+						broadcast(client, "JOINED " + client.getNick());
+					}
+					else{
+						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+					}
+				break;
+				case("/leave"):
+					if(!client.getRoom().equals("")){
+						Room temp_room = verify_room(client.getRoom());
+						if(temp_room == null){
+							client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+						}
+						else{
+							client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
+							broadcast(client, "LEFT " + client.getNick());
+							temp_room.remove_client(client);
+						}
+					}
+					else{
+						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+					}
+				break;
+				case("/bye"):
+					Room temp_room = verify_room(client.getRoom());
+				if(temp_room != null){
+					broadcast(client, "LEFT " + client.getNick());
+					temp_room.remove_client(client);
 				}
-				else{
+				client.getSc().write(encoder.encode(CharBuffer.wrap("BYE\n")));
+				clients.remove(client);
+				System.out.println("Closed connection from: " + client.getSc().socket());			
+				client.getSc().close();
+				break;
+				case("/priv"):
+					Client receiver = get_client(messageFromClient[1]);
+				if(receiver == null){
 					client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
 				}
-			break;
-			case("/bye"):
-				Room temp_room = verify_room(client.getRoom());
-			if(temp_room != null){
-				broadcast(client, "LEFT " + client.getNick());
-				temp_room.remove_client(client);
-			}
-			client.getSc().write(encoder.encode(CharBuffer.wrap("BYE\n")));
-			clients.remove(client);
-			System.out.println("Closed connection from: " + client.getSc().socket());			
-			client.getSc().close();
-			break;
-			case("/priv"):
-			Client receiver = get_client(messageFromClient[1]);
-			if(receiver == null){
-				client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+				else{
+					client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
+					String message ="";
+					for(int k = 2; k<messageFromClient.length; k++){
+						message += (messageFromClient[k]+ " ");
+					}
+					receiver.getSc().write(encoder.encode(CharBuffer.wrap("PRIVATE " + client.getNick() + " " + message+"\n")));
+				}
+				break;
+				default:
+					client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+					break;
+				}
 			}
 			else{
-				client.getSc().write(encoder.encode(CharBuffer.wrap("OK\n")));
-				String message ="";
-				for(int k = 2; k<messageFromClient.length; k++){
-					message += (messageFromClient[k]+ " ");
-				}
-				receiver.getSc().write(encoder.encode(CharBuffer.wrap("PRIVATE " + client.getNick() + " " + message+"\n")));
-			}
-			break;
-			default:
 				if(client.getRoom() == ""){
-						client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
+					client.getSc().write(encoder.encode(CharBuffer.wrap("ERROR\n")));
 				}
-				else broadcast(client, "MESSAGE " + client.getNick()+" " + i);
-				break;
+				else{
+					broadcast(client, "MESSAGE " + client.getNick()+" " + i.substring(1));
+				}
 			}
 		}
 	}

@@ -87,6 +87,14 @@ public class ChatClient {
 			if(connected){
 				frame.setTitle("Chat Server @ " + server + ":" + port);
 				printMessage("Connected to server @ " + server + ":" + port);
+				printMessage("---------------------------------------------------------");
+				printMessage("Available Commands:");
+				printMessage("/nick $nickname to set/change your nickname.");
+				printMessage("/join $room to join/change your conversation room.");
+				printMessage("/leave to leave your current coversation room.");
+				printMessage("/priv $nickname to send a private message to $nickname.");
+				printMessage("/bye to close the connection to the current server.");
+				printMessage("---------------------------------------------------------");
 			}
 			else printMessage("Unable to connect to the server.");
 		}
@@ -137,6 +145,14 @@ public class ChatClient {
 				printPrivateMessage(receiver,"TO", message);
 			}
 			if(cmd.equals("ERROR"))printMessage("Unable to send private message to <"+ receiver + ">");
+			break;
+		default:
+			if(cmd.equals("ERROR")){
+				if(nickname == null) printMessage("Please set your nickname!");
+				else if(channel == null) printMessage("Please join a room before sending any message!");
+				else
+				printMessage("Invalid command: " + prev_message_split[0]);
+			}
 			break;
 		}
 	}
