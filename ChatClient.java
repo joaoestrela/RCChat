@@ -118,7 +118,10 @@ public class ChatClient {
 				printMessage("You left the room #" + channel + ".");
 				channel = "";
 			}
-			if(cmd.equals("ERROR"))printMessage("You can't leave room #" + channel + ".");
+			if(cmd.equals("ERROR")){
+				if(channel == null) printMessage("You can't leave if you aint't in a room");
+				else printMessage("You can't leave room #" + channel + ".");
+			}
 			break;
 		case "/join":
 			channel = prev_message_split[1];
@@ -126,7 +129,7 @@ public class ChatClient {
 				printMessage("You joined the room #" + channel + ".");
 			}
 			if(cmd.equals("ERROR")){
-				if(nickname == null) printMessage("You before setting a nickname.");
+				if(nickname == null) printMessage("You can join a room before setting a nickname.");
 				else printMessage("You can't join room #" + channel + ".");
 			}
 			break;
@@ -135,7 +138,11 @@ public class ChatClient {
 			if(cmd.equals("OK")){
 				printMessage("You changed your nick to <" + nickname + ">.");
 			}
-			if(cmd.equals("ERROR"))printMessage("You can't change nick to "+nickname+".");
+			if(cmd.equals("ERROR")){
+				if(nickname == null) printMessage("You can't set your nickname to "+nickname+".");
+				else
+				printMessage("You can't change your nickname to "+nickname+".");
+			}
 			break;
 		case "/priv":
 			String receiver = prev_message_split[1];
