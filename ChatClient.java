@@ -155,8 +155,11 @@ public class ChatClient {
 			break;
 		default:
 			if(cmd.equals("ERROR")){
-				if(prev_message_split[0].charAt(0) == '/' && prev_message_split[0].charAt(1) != '/')printMessage("Invalid command: " + prev_message_split[0]);
-				else if(nickname == null) printMessage("Please set your nickname before doing that!");
+				if(prev_message_split[0].charAt(0) == '/' && prev_message_split[0].charAt(1) != '/'){
+					printMessage("Invalid command: " + prev_message_split[0]);
+					break;
+				}
+				if(nickname == null) printMessage("Please set your nickname before doing that!");
 				else if(channel == null) printMessage("Please join a room before sending any message!");
 			}
 			break;
