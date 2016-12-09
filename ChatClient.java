@@ -129,7 +129,7 @@ public class ChatClient {
 				printMessage("You joined the room #" + channel + ".");
 			}
 			if(cmd.equals("ERROR")){
-				if(nickname == null) printMessage("You can join a room before setting a nickname.");
+				if(nickname == null) printMessage("You can't join a room before setting a nickname.");
 				else printMessage("You can't join room #" + channel + ".");
 			}
 			break;
